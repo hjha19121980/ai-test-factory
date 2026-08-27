@@ -1,0 +1,51 @@
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">TF</div>
+      <div><span class="brand-kicker">AI TEST</span><strong>Factory</strong></div>
+    </div>
+    <nav class="nav-list">
+      <a class="nav-item active" href="#intake" aria-current="page"><span class="nav-index">01</span><span>New run</span></a>
+      <a class="nav-item" href="#runs"><span class="nav-index">02</span><span>Run history</span></a>
+      <a class="nav-item" href="#agents"><span class="nav-index">03</span><span>Agent roster</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="status-dot"></div><div><span class="footer-label">SYSTEM STATUS</span><span class="footer-value">Ready for intake</span></div></div>
+  </aside>
+
+  <main class="main-content" id="intake">
+    <header class="topbar"><span class="breadcrumb">WORKSPACE / NEW TEST RUN</span><span class="model-badge"><span class="model-dot"></span> Claude Sonnet 4.5</span></header>
+    <section class="intro">
+      <div><p class="eyebrow">01 / SOURCE INTAKE</p><h1>Give the factory<br /><em>something to test.</em></h1><p class="intro-copy">Start with the change that matters. The Planner will map its risk, acceptance criteria, and the right testing strategy before anything runs.</p></div>
+      <div class="run-marker" aria-hidden="true"><span>RUN</span><strong>001</strong></div>
+    </section>
+
+    <form class="intake-form" (ngSubmit)="submitToPlanner()">
+      <section class="form-section source-section">
+        <div class="section-heading"><span class="section-number">01</span><div><h2>Choose your source</h2><p>Where should the Planner begin its investigation?</p></div></div>
+        <div class="source-grid" role="radiogroup" aria-label="Source type">
+          @for (source of sourceTypes; track source.id) {
+            <button type="button" class="source-card" [class.selected]="sourceType === source.id" [attr.aria-checked]="sourceType === source.id" role="radio" (click)="selectSource(source.id)">
+              <span class="source-card-top"><span class="source-icon" aria-hidden="true">{{ source.id === 'jira' ? 'J' : source.id === 'document' ? 'D' : 'GH' }}</span><span class="radio-indicator" aria-hidden="true"></span></span>
+              <strong>{{ source.label }}</strong><span>{{ source.description }}</span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="form-section details-section">
+        <div class="section-heading"><span class="section-number">02</span><div><h2>Set the context</h2><p>A little context gives every specialist a sharper brief.</p></div></div>
+        <div class="field-grid">
+          <label class="field field-wide"><span>{{ sourceType === 'jira' ? 'Jira story key or URL' : sourceType === 'document' ? 'Requirement document URL or content' : 'Pull request, commit, or repository URL' }}</span><input name="sourceValue" [(ngModel)]="sourceValue" [placeholder]="sourceType === 'jira' ? 'e.g. PAY-482 or https://jira.acme/browse/PAY-482' : sourceType === 'document' ? 'Paste a link or the requirement text...' : 'https://github.com/acme/payments/pull/184'" required /></label>
+          <label class="field"><span>Repository</span><input name="repository" [(ngModel)]="repository" placeholder="acme / payments-api" /></label>
+          <label class="field"><span>Target branch</span><input name="branch" [(ngModel)]="branch" placeholder="main" /></label>
+          <label class="field field-wide"><span>Additional direction <small>OPTIONAL</small></span><textarea name="notes" [(ngModel)]="notes" rows="3" placeholder="Call out a risky area, a user journey, or a constraint the agents should know..."></textarea></label>
+        </div>
+      </section>
+      <section class="submit-row"><div class="approval-note"><span class="lock-icon" aria-hidden="true">[ ]</span><span>The Planner will pause for your approval<br />before generating any tests.</span></div><button class="submit-button" type="submit"><span>{{ isSubmitted ? 'Intake queued' : 'Send to Planner' }}</span><span class="arrow" aria-hidden="true">-&gt;</span></button></section>
+    </form>
+
+    @if (isSubmitted) {
+      <section class="queued-banner" aria-live="polite"><span class="queued-icon">OK</span><div><strong>Source received. Planner is standing by.</strong><span>This local preview simulates the intake handoff. The next screen will present an editable plan for approval.</span></div><span class="queued-status">AWAITING PLAN</span></section>
+    }
+  </main>
+</div>
