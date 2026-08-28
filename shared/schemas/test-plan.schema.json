@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-test-factory.local/schemas/test-plan.schema.json",
+  "title": "Approved QA Test Plan",
+  "type": "object",
+  "required": ["specId", "specVersion", "status", "tasks"],
+  "properties": {
+    "specId": { "type": "string", "minLength": 1 },
+    "specVersion": { "type": "integer", "minimum": 1 },
+    "status": { "enum": ["draft", "awaiting_approval", "approved", "rejected"] },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "testType", "acceptanceCriteria", "priority"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "testType": { "enum": ["unit", "integration", "api", "e2e", "accessibility", "performance", "review"] },
+          "acceptanceCriteria": { "type": "array", "items": { "type": "string" } },
+          "priority": { "enum": ["critical", "high", "medium", "low"] },
+          "passCriteria": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

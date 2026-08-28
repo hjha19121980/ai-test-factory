@@ -1,0 +1,24 @@
+<section class="form-section source-section">
+  <div class="section-heading"><span class="section-number">01</span><div><h2>Choose your source</h2><p>Where should the Planner begin its investigation?</p></div></div>
+  <div class="source-grid" role="radiogroup" aria-label="Source type">
+    @for (source of sourceTypes; track source.id) { <button type="button" class="source-card" [class.selected]="model.sourceType === source.id" [attr.aria-checked]="model.sourceType === source.id" role="radio" (click)="selectSource(source.id)"><span class="source-card-top"><span class="source-icon" aria-hidden="true">{{ source.id === 'jira' ? 'J' : source.id === 'document' ? 'D' : 'GH' }}</span><span class="radio-indicator" aria-hidden="true"></span></span><strong>{{ source.label }}</strong><span>{{ source.description }}</span></button> }
+  </div>
+</section>
+<section class="form-section details-section">
+  <div class="section-heading"><span class="section-number">02</span><div><h2>Set the context</h2><p>Give every specialist a precise repository and test destination.</p></div></div>
+  <div class="field-grid">
+    <label class="field field-wide"><span>{{ model.sourceType === 'jira' ? 'Jira location' : model.sourceType === 'document' ? 'Requirement document' : 'Git location' }} <b class="required-mark" aria-hidden="true">*</b></span>
+      @if (model.sourceType === 'document') { <div class="mode-switch" role="tablist" aria-label="Requirement document source"><button type="button" [class.active]="model.documentMode === 'attachment'" (click)="model.documentMode = 'attachment'">Attachment</button><button type="button" [class.active]="model.documentMode === 'confluence'" (click)="model.documentMode = 'confluence'">Confluence link</button></div>
+        @if (model.documentMode === 'attachment') { <span class="document-label">Document attachment <b class="required-mark" aria-hidden="true">*</b></span><input name="documentFile" type="file" accept=".md,.doc,.docx,.pdf,.txt" (change)="handleDocumentFile($event)" required /> @if (model.documentFileName) { <small class="file-name">{{ model.documentFileName }}</small> } } @else { <span class="document-label">Confluence location <b class="required-mark" aria-hidden="true">*</b></span><input name="sourceValue" [(ngModel)]="model.sourceValue" placeholder="https://acme.atlassian.net/wiki/spaces/PROD/pages/123" required /> }
+      } @else { <input name="sourceValue" [(ngModel)]="model.sourceValue" [placeholder]="model.sourceType === 'jira' ? 'e.g. PAY-482 or https://jira.acme/browse/PAY-482' : '184 or https://github.com/acme/payments/pull/184'" required /> }
+      @if (submitted && !model.sourceValue.trim()) { <small class="field-error">{{ model.sourceType === 'jira' ? 'Enter the Jira location.' : model.sourceType === 'document' ? 'Provide a document attachment or Confluence location.' : 'Enter the Git location.' }}</small> }
+    </label>
+    <label class="field"><span>Repository name</span><input name="repository" [(ngModel)]="model.repository" placeholder="acme / payments-api" required /></label>
+    <label class="field"><span>Repository location <b class="required-mark" aria-hidden="true">*</b></span><input name="repositoryLocation" [(ngModel)]="model.repositoryLocation" placeholder="C:\work\payments-api" required />@if (submitted && !model.repositoryLocation.trim()) { <small class="field-error">Enter the repository location.</small> }</label>
+    <label class="field"><span>Target branch <b class="required-mark" aria-hidden="true">*</b></span><input name="branch" [(ngModel)]="model.branch" placeholder="main" required />@if (submitted && !model.branch.trim()) { <small class="field-error">Enter the target branch.</small> }</label>
+    <label class="field"><span>Test output path <b class="required-mark" aria-hidden="true">*</b></span><input name="testOutputPath" [(ngModel)]="model.testOutputPath" placeholder="tests/api/refunds.spec.ts" required />@if (submitted && !model.testOutputPath.trim()) { <small class="field-error">Enter where the test should be written.</small> }</label>
+    <label class="field field-wide"><span>Existing test file <small>OPTIONAL</small></span><input name="existingTestFilePath" [(ngModel)]="model.existingTestFilePath" placeholder="tests/api/refunds.spec.ts" /></label>
+    <label class="preserve-tests"><input name="preserveExistingTests" type="checkbox" [(ngModel)]="model.preserveExistingTests" /><span><strong>Inspect and update existing tests in place</strong><small>Do not rewrite existing cases. Add or update coverage in the same file whenever possible.</small></span></label>
+    <label class="field field-wide"><span>Additional direction <small>OPTIONAL</small></span><textarea name="notes" [(ngModel)]="model.notes" rows="3" placeholder="Call out a risky area, a user journey, or a constraint..."></textarea></label>
+  </div>
+</section>

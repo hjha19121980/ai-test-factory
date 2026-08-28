@@ -97,7 +97,7 @@ The backend is the source of truth for workflow state and authorization of trans
 - `backend/integrations/`: GitHub, Jira, document parsing, model, runner, and artifact storage adapters.
 - `backend/repositories/`: persistence interfaces and implementations.
 
-The API must enforce the approval gate even if a client bypasses the Angular UI.
+The API must enforce the approval gate even if a client bypasses the Angular UI. The initial implementation is in `backend/app.py` and exposes `POST /runs`, `GET /runs/{runId}`, and `POST /runs/{runId}/approval`; generation endpoints and durable persistence remain follow-up work.
 
 ### Runtime agents
 
@@ -125,6 +125,8 @@ Agents must not share hidden mutable state. They communicate through versioned c
 - Execution result, logs, traces, screenshots, and coverage.
 - Repair attempt and diff summary.
 - Reviewer finding and recommendation.
+
+The initial implementation includes JSON Schemas for QA specifications, approved test plans, and traceability records under `shared/schemas/`. Versioned requirement inputs and plans belong under `specs/`.
 
 The Angular client may generate types from these contracts, but the backend remains authoritative for validation.
 

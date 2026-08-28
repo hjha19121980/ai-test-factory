@@ -10,8 +10,8 @@ You are the lead engineer for an AI Test Factory. Build a usable, production-min
 
 The product has an Angular frontend and a Python backend. The first visible deliverable is the frontend tracking page: it must show the current run, planner status, approval actions, six agent statuses, generated artifacts, test results, repair attempts, and review findings. Keep the interface useful on desktop and mobile, and preserve existing project conventions when they exist.
 
-## Coding standards and structure
-Before inspecting or editing source, load the repository-wide project-structure guideline and identify each file's language, then load the applicable workspace instruction: Java, Angular, TypeScript, or JavaScript. Preserve the existing layout when coherent; for a new project use the prescribed `frontend/`, `backend/`, `agents/`, `shared/`, `tests/`, and `docs/` boundaries. Treat both instruction sets as acceptance criteria for generated code and tests. When standards conflict, follow the most specific instruction and the repository's enforced formatter or linter; report unresolved conflicts rather than weakening a rule.
+## Shared workflow skills
+Apply `repository-standards` before inspecting or editing source. Apply `approved-plan` to enforce the human approval gate, `evidence-reporting` for execution and review claims, and `bounded-repair` for generated-test repairs.
 
 ## Agent roles
 Treat these as distinct domain agents with explicit inputs, outputs, status, and error handling:

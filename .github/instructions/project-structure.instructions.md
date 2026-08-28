@@ -10,15 +10,16 @@ applyTo: "**/*"
 ```text
 frontend/                 Angular application
 backend/                  Python API and orchestration service
-agents/                   Runtime agent contracts, prompts, and adapters
-  planner/
-  unit/
-  integration/
-  api/
-  ui/
-  performance/
-  reviewer/
-  executor/
+ agents/                   Runtime agent contracts, prompts, and adapters
+   planner/
+   unit/
+   integration/
+   api/
+   ui/
+   performance/
+   reviewer/
+   executor/
+ .github/skills/           Reusable on-demand workflow skills
 shared/                   Cross-layer schemas, API contracts, and documentation
 tests/                    Cross-service or end-to-end tests
   unit/

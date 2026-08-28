@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-test-factory.local/schemas/traceability.schema.json",
+  "title": "QA Traceability Record",
+  "type": "object",
+  "required": ["testId", "specId", "acceptanceCriteria", "testType", "status"],
+  "properties": {
+    "testId": { "type": "string", "minLength": 1 },
+    "specId": { "type": "string", "minLength": 1 },
+    "acceptanceCriteria": { "type": "string", "minLength": 1 },
+    "riskId": { "type": "string" },
+    "testType": {
+      "enum": ["unit", "integration", "api", "e2e", "accessibility", "performance"]
+    },
+    "status": { "enum": ["planned", "generated", "passed", "failed", "blocked"] },
+    "file": { "type": "string" },
+    "evidence": { "type": "object" }
+  },
+  "additionalProperties": false
+}
