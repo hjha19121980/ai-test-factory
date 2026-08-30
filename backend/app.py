@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -75,6 +76,66 @@ class RunStore:
 
 
 store = RunStore()
+MCP_CONFIG_PATH = Path(__file__).resolve().parent.parent / "mcp-servers.json"
+MODEL_CONFIG_PATH = Path(__file__).resolve().parent.parent / "model-settings.json"
+ALLOWED_CORS_ORIGINS = {"http://localhost:4200", "http://127.0.0.1:4200"}
+
+
+def resolve_cors_origin(origin: str | None) -> str:
+    if origin in ALLOWED_CORS_ORIGINS:
+        return origin
+    return "http://localhost:4200"
+
+
+def load_mcp_config() -> dict[str, Any]:
+    if not MCP_CONFIG_PATH.exists():
+        return {"version": "1.0", "lastUpdated": "", "servers": []}
+
+    try:
+        return json.loads(MCP_CONFIG_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"version": "1.0", "lastUpdated": "", "servers": []}
+
+
+def save_mcp_config(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = {
+        "version": str(payload.get("version", "1.0")),
+        "lastUpdated": payload.get("lastUpdated") or "",
+        "servers": payload.get("servers", []),
+    }
+    MCP_CONFIG_PATH.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+    return normalized
+
+
+def load_model_config() -> dict[str, Any]:
+    if not MODEL_CONFIG_PATH.exists():
+        return {
+            "version": "1.0",
+            "lastUpdated": "",
+            "selectedModel": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+            "availableModels": ["anthropic.claude-3-5-sonnet-20241022-v2:0"],
+        }
+
+    try:
+        return json.loads(MODEL_CONFIG_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {
+            "version": "1.0",
+            "lastUpdated": "",
+            "selectedModel": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+            "availableModels": ["anthropic.claude-3-5-sonnet-20241022-v2:0"],
+        }
+
+
+def save_model_config(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = {
+        "version": str(payload.get("version", "1.0")),
+        "lastUpdated": payload.get("lastUpdated") or "",
+        "selectedModel": str(payload.get("selectedModel", "anthropic.claude-3-5-sonnet-20241022-v2:0")),
+        "availableModels": list(payload.get("availableModels", ["anthropic.claude-3-5-sonnet-20241022-v2:0"])),
+    }
+    MODEL_CONFIG_PATH.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+    return normalized
 
 
 def serialize_run(run: Run) -> dict[str, Any]:
@@ -99,20 +160,43 @@ def serialize_run(run: Run) -> dict[str, Any]:
 class RequestHandler(BaseHTTPRequestHandler):
     def _send(self, status: int, payload: dict[str, Any]) -> None:
         body = json.dumps(payload).encode("utf-8")
+        origin = self.headers.get("Origin")
+        allowed_origin = resolve_cors_origin(origin)
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "http://localhost:4200")
+        self.send_header("Access-Control-Allow-Origin", allowed_origin)
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
     def do_OPTIONS(self) -> None:
+        origin = self.headers.get("Origin")
+        allowed_origin = resolve_cors_origin(origin)
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "http://localhost:4200")
+        self.send_header("Access-Control-Allow-Origin", allowed_origin)
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
         self.end_headers()
+
+    def do_GET(self) -> None:
+        if self.path == "/mcp-servers":
+            self._send(200, load_mcp_config())
+            return
+
+        if self.path == "/model-settings":
+            self._send(200, load_model_config())
+            return
+
+        prefix = "/runs/"
+        if self.path.startswith(prefix):
+            run = store.get(self.path[len(prefix) :])
+            if run is None:
+                self._send(404, {"error": "Run not found"})
+                return
+            self._send(200, serialize_run(run))
+            return
+        self._send(404, {"error": "Not found"})
 
     def do_POST(self) -> None:
         if self.path == "/runs":
@@ -180,15 +264,29 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         self._send(404, {"error": "Not found"})
 
-    def do_GET(self) -> None:
-        prefix = "/runs/"
-        if self.path.startswith(prefix):
-            run = store.get(self.path[len(prefix) :])
-            if run is None:
-                self._send(404, {"error": "Run not found"})
+    def do_PUT(self) -> None:
+        if self.path == "/mcp-servers":
+            try:
+                size = int(self.headers.get("Content-Length", "0"))
+                payload = json.loads(self.rfile.read(size))
+                saved = save_mcp_config(payload)
+                self._send(200, saved)
                 return
-            self._send(200, serialize_run(run))
-            return
+            except (TypeError, ValueError, json.JSONDecodeError) as error:
+                self._send(400, {"error": str(error)})
+                return
+
+        if self.path == "/model-settings":
+            try:
+                size = int(self.headers.get("Content-Length", "0"))
+                payload = json.loads(self.rfile.read(size))
+                saved = save_model_config(payload)
+                self._send(200, saved)
+                return
+            except (TypeError, ValueError, json.JSONDecodeError) as error:
+                self._send(400, {"error": str(error)})
+                return
+
         self._send(404, {"error": "Not found"})
 
     def log_message(self, format: str, *args: Any) -> None:

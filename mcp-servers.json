@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-08-30",
+  "servers": [
+    {
+      "id": "github",
+      "name": "GitHub MCP",
+      "description": "Pull requests, commits, files, and repo metadata",
+      "endpoint": "",
+      "enabled": false,
+      "required": false,
+      "notes": "Add the local or remote MCP endpoint for GitHub access."
+    },
+    {
+      "id": "jira",
+      "name": "Jira MCP",
+      "description": "Stories, comments, and acceptance criteria",
+      "endpoint": "",
+      "enabled": false,
+      "required": false,
+      "notes": "Add the Jira server URL if the project needs issue-tracking access."
+    },
+    {
+      "id": "confluence",
+      "name": "Confluence MCP",
+      "description": "Requirement pages and attachments",
+      "endpoint": "",
+      "enabled": false,
+      "required": false,
+      "notes": "Add the Confluence workspace endpoint when documentation context is needed."
+    }
+  ]
+}

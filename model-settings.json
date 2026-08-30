@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-08-30",
+  "selectedModel": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+  "availableModels": [
+    "anthropic.claude-3-5-sonnet-20241022-v2:0"
+  ]
+}

@@ -1,0 +1,95 @@
+<div class="new-run-page">
+  <header class="topbar">
+    <span class="breadcrumb">WORKSPACE / NEW TEST RUN</span>
+    <div class="settings-wrap">
+      <button class="settings-button" type="button" (click)="toggleSettings()" [attr.aria-expanded]="settingsOpen" aria-label="Open settings">
+        <span aria-hidden="true">⚙</span>
+      </button>
+
+      @if (settingsOpen) {
+        <div class="settings-popover" role="dialog" aria-label="Application settings">
+          <div class="settings-group">
+            <label class="settings-label" for="model-select">Model</label>
+            <select id="model-select" class="settings-select" [(ngModel)]="selectedModel" (ngModelChange)="onModelChange()">
+              @for (model of availableModels; track model) {
+                <option [value]="model">{{ model }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-header-row">
+              <span class="settings-label">MCP servers</span>
+              <button type="button" class="settings-action" (click)="startMcpServers()">Start selected</button>
+            </div>
+
+            <div class="settings-server-list">
+              @for (server of mcpServers; track server.id) {
+                <label class="settings-server-item">
+                  <input type="checkbox" [checked]="server.selected" (change)="toggleMcpServer(server)" />
+                  <span>
+                    <strong>{{ server.name }}</strong>
+                    <small>{{ server.description }}</small>
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </header>
+
+  <section class="intro">
+    <div>
+      <p class="eyebrow">01 / SOURCE INTAKE</p>
+      <h1>Give the factory<br /><em>something to test.</em></h1>
+      <p class="intro-copy">Start with the change that matters. The Planner will map its risk, acceptance criteria, and the right testing strategy before anything runs.</p>
+    </div>
+    <div class="run-marker" aria-hidden="true"><span>RUN</span><strong>001</strong></div>
+  </section>
+
+  @if (plannerState === 'intake') {
+    <form class="intake-form" #intakeForm="ngForm" novalidate (ngSubmit)="submitToPlanner(intakeForm)">
+      <app-source-intake [model]="intake" [submitted]="formSubmitted" />
+      <app-test-coverage [selectedTestTypes]="selectedTestTypes" [submitted]="formSubmitted" />
+      <section class="submit-row">
+        <label class="approval-toggle" aria-label="Planner approval gate">
+          <input type="checkbox" checked disabled />
+          <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+          <span class="toggle-copy">The Planner will pause for your approval<br />before generating any tests.</span>
+        </label>
+        <button class="submit-button" type="submit" [disabled]="isSubmitting || !canCreatePlanner">
+          <span>{{ isSubmitting ? 'Creating...' : 'Create planner' }}</span>
+          <span class="arrow" aria-hidden="true">-&gt;</span>
+        </button>
+      </section>
+    </form>
+  }
+
+  @if (plannerState === 'planner') {
+    <app-workflow-stepper
+      [steps]="workflowSteps"
+      [activityLog]="activityLog"
+      [runId]="run?.runId"
+      [planState]="planDecision"
+    />
+    <app-planner-review
+      [runId]="run?.runId"
+      [sourceType]="intake.sourceType"
+      [testLayerCount]="selectedTestTypes.size"
+      [summary]="plannerSummary"
+      (summaryChange)="plannerSummary = $event"
+      [criteria]="plannerCriteria"
+      (criteriaChange)="plannerCriteria = $event"
+      [decision]="planDecision"
+      (save)="updatePlan()"
+      (approve)="approvePlan()"
+      (reject)="rejectPlan()"
+    />
+  }
+
+  @if (errorMessage) {
+    <p class="error-message" role="alert">{{ errorMessage }}</p>
+  }
+</div>

@@ -9,18 +9,24 @@ class FakeBlock:
         self.text = text
 
 
-class FakeMessages:
+class FakeCompletions:
     def __init__(self) -> None:
         self.calls = []
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
-        return type("Response", (), {"content": [FakeBlock("text", " planner output ")]})()
+        choice = type("Choice", (), {"message": type("Message", (), {"content": " planner output "})()})()
+        return type("Response", (), {"choices": [choice]})()
+
+
+class FakeChat:
+    def __init__(self) -> None:
+        self.completions = FakeCompletions()
 
 
 class FakeClient:
     def __init__(self) -> None:
-        self.messages = FakeMessages()
+        self.chat = FakeChat()
 
 
 class ClaudeProviderTests(unittest.TestCase):
@@ -31,9 +37,10 @@ class ClaudeProviderTests(unittest.TestCase):
         result = provider.complete("system", "user", max_tokens=123)
 
         self.assertEqual(result, "planner output")
-        self.assertEqual(client.messages.calls[0]["model"], "claude-sonnet-test")
-        self.assertEqual(client.messages.calls[0]["system"], "system")
-        self.assertEqual(client.messages.calls[0]["max_tokens"], 123)
+        self.assertEqual(client.chat.completions.calls[0]["model"], "claude-sonnet-test")
+        self.assertEqual(client.chat.completions.calls[0]["messages"][0]["content"], "system")
+        self.assertEqual(client.chat.completions.calls[0]["messages"][1]["content"], "user")
+        self.assertEqual(client.chat.completions.calls[0]["max_tokens"], 123)
 
     def test_missing_key_is_reported_before_sdk_use(self) -> None:
         with self.assertRaises(ClaudeProviderError):
